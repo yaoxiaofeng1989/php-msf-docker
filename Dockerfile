@@ -113,38 +113,6 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/curl*
 
 # -----------------------------------------------------------------------------
-# Install Nginx
-# -----------------------------------------------------------------------------
-ENV nginx_version 1.12.2
-ENV NGINX_INSTALL_DIR ${HOME}/nginx
-RUN cd ${SRC_DIR} \
-    && wget -q -O nginx-${nginx_version}.tar.gz http://nginx.org/download/nginx-${nginx_version}.tar.gz \
-    && wget -q -O nginx-http-concat.zip https://github.com/alibaba/nginx-http-concat/archive/master.zip \
-    && wget -q -O nginx-logid.zip https://github.com/pinguo-liuzhaohui/nginx-logid/archive/master.zip \
-    && tar zxf nginx-${nginx_version}.tar.gz \
-    && unzip nginx-http-concat.zip -d nginx-http-concat \
-    && unzip nginx-logid.zip -d nginx-logid \
-    && cd nginx-${nginx_version} \
-    && ./configure --prefix=$NGINX_INSTALL_DIR --with-http_stub_status_module --with-http_ssl_module \
-       --add-module=../nginx-http-concat/nginx-http-concat-master --add-module=../nginx-logid/nginx-logid-master 1>/dev/null \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/nginx-*
-
-# -----------------------------------------------------------------------------
-# Install Redis
-# -----------------------------------------------------------------------------
-ENV redis_version 3.2.11
-ENV REDIS_INSTALL_DIR ${HOME}/redis
-RUN cd ${SRC_DIR} \
-    && wget -q -O redis-${redis_version}.tar.gz http://download.redis.io/releases/redis-${redis_version}.tar.gz \
-    && tar xzf redis-${redis_version}.tar.gz \
-    && cd redis-${redis_version} \
-    && make 1>/dev/null \
-    && make PREFIX=$REDIS_INSTALL_DIR install \
-    && rm -rf ${SRC_DIR}/redis-*
-
-# -----------------------------------------------------------------------------
 # Install ImageMagick
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
@@ -157,59 +125,6 @@ RUN cd ${SRC_DIR} \
     && make \
     && make install \
     && rm -rf $SRC_DIR/ImageMagick*
-
-# -----------------------------------------------------------------------------
-# Install hiredis
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O hiredis-0.13.3.tar.gz https://github.com/redis/hiredis/archive/v0.13.3.tar.gz \
-    && tar zxvf hiredis-0.13.3.tar.gz \
-    && cd hiredis-0.13.3 \
-    && make \
-    && make install \
-    && echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf \
-    && ldconfig \
-    && rm -rf $SRC_DIR/hiredis-*
-
-# -----------------------------------------------------------------------------
-# Install libmemcached using by php-memcached
-# -----------------------------------------------------------------------------
-ENV LIB_MEMCACHED_INSTALL_DIR /usr/local/
-RUN cd ${SRC_DIR} \
-    && wget -q -O libmemcached-1.0.18.tar.gz https://launchpad.net/libmemcached/1.0/1.0.18/+download/libmemcached-1.0.18.tar.gz \
-    && tar xzf libmemcached-1.0.18.tar.gz \
-    && cd libmemcached-1.0.18 \
-    && ./configure --prefix=$LIB_MEMCACHED_INSTALL_DIR --with-memcached 1>/dev/null \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/libmemcached*
-
-# -----------------------------------------------------------------------------
-# Install libmcrypt using by php-mcrypt
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O libmcrypt-2.5.8.tar.gz https://nchc.dl.sourceforge.net/project/mcrypt/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz \
-    && tar xzf libmcrypt-2.5.8.tar.gz \
-    && cd libmcrypt-2.5.8 \
-    && ./configure 1>/dev/null \
-    && make 1>/dev/null \
-    && make install \
-    && echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local.conf \
-    && echo "/usr/local/src/libmcrypt-2.5.8/lib/.libs" >> /etc/ld.so.conf.d/local.conf \
-    && chmod gu+x /etc/ld.so.conf.d/local.conf \
-    && ldconfig -v
-
-# -----------------------------------------------------------------------------
-# Install re2c for PHP
-# -----------------------------------------------------------------------------
-run cd $SRC_DIR \
-    && wget -q -O re2c-1.0.tar.gz https://excellmedia.dl.sourceforge.net/project/re2c/old/re2c-1.0.tar.gz \
-    && tar xzf re2c-1.0.tar.gz \
-    && cd re2c-1.0 \
-    && ./configure \
-    && make \
-    && make install \
-    && rm -rf ${SRC_DIR}/re2c*
 
 # -----------------------------------------------------------------------------
 # Install PHP
@@ -271,26 +186,6 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${PHP_INSTALL_DIR}/lib/php.ini \
     && cp -f php.ini-development ${PHP_INSTALL_DIR}/lib/php.ini \
     && rm -rf ${SRC_DIR}/php* ${SRC_DIR}/libmcrypt*
-
-# -----------------------------------------------------------------------------
-# Install yaml and PHP yaml extension
-# -----------------------------------------------------------------------------
-RUN cd $SRC_DIR \
-    && wget -q -O yaml-0.1.7.tar.gz http://pyyaml.org/download/libyaml/yaml-0.1.7.tar.gz \
-    && tar xzf yaml-0.1.7.tar.gz \
-    && cd yaml-0.1.7 \
-    && ./configure --prefix=/usr/local \
-    && make >/dev/null \
-    && make install \
-    && cd $SRC_DIR \
-    && wget -q -O yaml-2.0.2.tgz https://pecl.php.net/get/yaml-2.0.2.tgz \
-    && tar xzf yaml-2.0.2.tgz \
-    && cd yaml-2.0.2 \
-    && $PHP_INSTALL_DIR/bin/phpize \
-    && ./configure --with-yaml=/usr/local --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
-    && make >/dev/null \
-    && make install \
-    && rm -rf $SRC_DIR/yaml-*
 
 # -----------------------------------------------------------------------------
 # Install PHP mongodb extensions
@@ -366,32 +261,6 @@ RUN cd ${SRC_DIR} \
     && make install \
     && rm -rf ${SRC_DIR}/igbinary-*
 
-# -----------------------------------------------------------------------------
-# Install PHP memcached extensions
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O memcached-3.0.3.tgz https://pecl.php.net/get/memcached-3.0.3.tgz \
-    && tar xzf memcached-3.0.3.tgz \
-    && cd memcached-3.0.3 \
-    && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --enable-memcached --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
-       --with-libmemcached-dir=$LIB_MEMCACHED_INSTALL_DIR --disable-memcached-sasl 1>/dev/null \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/memcached-*
-
-# -----------------------------------------------------------------------------
-# Install PHP yac extensions
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O yac-2.0.2.tgz https://pecl.php.net/get/yac-2.0.2.tgz \
-    && tar zxf yac-2.0.2.tgz\
-    && cd yac-2.0.2 \
-    && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf $SRC_DIR/yac-*
 
 # -----------------------------------------------------------------------------
 # Install PHP swoole extensions
@@ -408,19 +277,6 @@ RUN cd ${SRC_DIR} \
     && make install \
     && rm -rf ${SRC_DIR}/swoole*
 
-# -----------------------------------------------------------------------------
-# Install PHP inotify extensions
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O inotify-2.0.0.tgz https://pecl.php.net/get/inotify-2.0.0.tgz \
-    && tar zxf inotify-2.0.0.tgz \
-    && cd inotify-2.0.0 \
-    && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config 1>/dev/null \
-    && make clean \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/inotify-*
 
 # -----------------------------------------------------------------------------
 # Install phpunit
@@ -448,30 +304,6 @@ RUN cd ${PHP_INSTALL_DIR} \
     && bin/pear install PHP_CodeSniffer-2.3.4 \
     && rm -rf /tmp/*
 
-# -----------------------------------------------------------------------------
-# Install jq
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O jq-1.5.tar.gz https://github.com/stedolan/jq/archive/jq-1.5.tar.gz \
-    && tar zxf jq-1.5.tar.gz \
-    && cd jq-jq-1.5 \
-    && ./configure --disable-maintainer-mode \
-    && make \
-    && make install \
-    && rm -rf ${SRC_DIR}/jq-*
-
-# -----------------------------------------------------------------------------
-# Install Apache ab
-# -----------------------------------------------------------------------------
-RUN cd ${HOME} \
-    && yum -y remove httpd \
-    && mkdir httpd \
-    && cd httpd \
-    && yumdownloader httpd-tools \
-    && rpm2cpio httpd-tools* | cpio -idmv \
-    && mkdir -p /home/worker/bin \
-    && mv ./usr/bin/ab /home/worker/bin \
-    && cd ${HOME} && rm -rf /home/worker/httpd
 
 # -----------------------------------------------------------------------------
 # Update Git
@@ -488,9 +320,35 @@ RUN cd ${SRC_DIR} \
     && rm -rf $SRC_DIR/git-2*
 
 # -----------------------------------------------------------------------------
+# Install Fastdfs and Fastdfs php extension
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && git clone https://github.com/happyfish100/libfastcommon.git
+    && cd libfastcommon \
+    && ./make.sh \
+    && ./make.sh install \
+    && rm -rf $SRC_DIR/libfastcommon
+
+RUN cd ${SRC_DIR} \
+    && git clone https://github.com/happyfish100/fastdfs.git
+    && cd fastdfs \
+    && ./make.sh \
+    && ./make.sh install \
+    && cd $SRC_DIR/fastdfs/php_client/ \
+    && ${PHP_INSTALL_DIR}/bin/phpize \
+    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
+    && make \
+    && make install \
+    && rm -rf $SRC_DIR/fastdfs  
+
+# -----------------------------------------------------------------------------
+# Install FFmpeg
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Install Node and apidoc and nodemon
 # -----------------------------------------------------------------------------
-RUN npm install apidoc nodemon -g
+# RUN npm install apidoc nodemon -g
 
 # -----------------------------------------------------------------------------
 # Copy Config
